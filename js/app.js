@@ -5,44 +5,34 @@ form.onsubmit = (e) => {
   e.preventDefault()
   const pokemon = document.querySelector('#pokemon')
   let pokemonValue = pokemon.value
-  if (pokemonValue !== '') {
-    init(`https://pokeapi.co/api/v2/pokemon/${pokemonValue}`)
-    pokemon.value = ''
-  } else {
-    alert('Debes rellenar el formulario')
-    return false
-  }
+  init(`${pokemonValue}`)
+  pokemon.value = ''
 }
 
-function init(url) {
-  const req = new XMLHttpRequest()
-  req.open('GET', url, true)
-  req.onreadystatechange = () => {
-    if (req.readyState == 4) {
-      if (req.status == 200) {
-        let res = JSON.parse(req.responseText)
-        let pokemon = {
-          name: res.name,
-          img: res.sprites.front_default,
-          type: res.types.map(type => type.type.name).join(', '),
+function init(id) {
+  fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+  .then((response) => response.json())
+    .then((pokemon) => {
+      let propertiesPokemon = {
+        name: pokemon.name,
+        img: pokemon.sprites.front_default,
+        type: pokemon.types.map(type => type.type.name).join(', '),
         }
-        renderPokemon(pokemon)
-      } else {
-        alert(`Pokémon no registrado en la pokédex`)
-      }
-    }
-  }
-  req.send(null)
+      renderPokemon(propertiesPokemon)
+    })
+  .catch(() => {
+    const messageError = `<p>Pokémon no encontrado</p>`
+    pokedex.innerHTML = messageError
+  })
 }
 
-init('https://pokeapi.co/api/v2/pokemon/25')
-
-
-function renderPokemon(pokemon) {
+function renderPokemon(objPokemon) {
   const templatePokemon = `
-    <h2>${pokemon.name}</h2>
-    <img src="${pokemon.img}" alt="Imagen Pokemon ${pokemon.name}" />
-    <p>Type: ${pokemon.type}</p>
+    <h2>${objPokemon.name}</h2>
+    <img src="${objPokemon.img}" alt="Imagen Pokemon ${pokemon.name}" />
+    <p>Type: ${objPokemon.type}</p>
   `
   pokedex.innerHTML = templatePokemon
 }
+
+init(25)
